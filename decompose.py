@@ -17,7 +17,7 @@ def tt_decomposition_conv_layer(layer, ranks):
     if layer.bias is None:
         bias = False
     else:
-        bias = layer.bias
+        bias = True
     
     pointwise_s_to_r_layer = torch.nn.Conv2d(
             in_channels=last.shape[1], 
