@@ -1,0 +1,8 @@
+torch
+torchvision
+nbdt
+numpy
+matplotlib
+tensorly
+carbontracker
+
