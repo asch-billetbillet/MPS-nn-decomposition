@@ -62,7 +62,7 @@ def _decompose(module, factor, ignore_list=['init_block', 'identity_conv']):
         else:
             for key in module._modules.keys():
                 if key not in ignore_list:
-                    module._modules[key] = _decompose(module._modules[key], factor)
+                    module._modules[key] = _decompose(module._modules[key], factor, ignore_list)
             return module
 
 
