@@ -2,7 +2,6 @@ import numpy as np
 import torch
 from carbontracker.tracker import CarbonTracker
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class EarlyStopping:
     """Early stops the training if validation loss doesn't improve after a given patience."""
@@ -54,6 +53,7 @@ class EarlyStopping:
         self.val_loss_min = val_loss
 
 def test_model(model, dataloader, resnet=False):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     tracker = CarbonTracker(epochs=1)
     model.to(device)
 
@@ -82,9 +82,11 @@ def test_model(model, dataloader, resnet=False):
         tracker.epoch_end()
         accuracy = n_correct/n_samples
         print(f'{accuracy =:.3f}')
+        torch.cuda.empty_cache()
         return accuracy, tracker
 
 def train_model(model, trainloader, validloader, optimizer, criterion, n_epochs, patience, save_path, resnet=False):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
 
     train_losses = []
@@ -152,3 +154,5 @@ def train_model(model, trainloader, validloader, optimizer, criterion, n_epochs,
         if early_stopping.early_stop:
             print("Early stopping")
             break
+    
+    torch.cuda.empty_cache()

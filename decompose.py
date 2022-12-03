@@ -47,7 +47,7 @@ def tt_decomposition_conv_layer(layer, ranks):
     return nn.Sequential(*new_layers)
 
 
-def _decompose(module, factor):
+def _decompose(module, factor, ignore_list=['init_block', 'identity_conv']):
     if isinstance(module, nn.modules.conv.Conv2d):
         conv_layer = module
         rank = max(conv_layer.weight.data.cpu().numpy().shape) // factor
@@ -61,17 +61,18 @@ def _decompose(module, factor):
             return module
         else:
             for key in module._modules.keys():
-                module._modules[key] = _decompose(module._modules[key], factor)
+                if key not in ignore_list:
+                    module._modules[key] = _decompose(module._modules[key], factor)
             return module
 
 
-def decompose(model, factor, savepath='./', include_params_and_factor=False):
+def decompose(model, factor, savepath='./', include_params_and_factor=False, ignore_list=['init_block', 'identity_conv']):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     tl.set_backend('pytorch')
     full_model = model.to(device)
     torch.save(full_model.state_dict(), savepath + 'full_model')
 
-    model = _decompose(model, factor)
+    model = _decompose(model, factor, ignore_list)
 
     if include_params_and_factor:
         nParam = sum(p.numel() for p in model.parameters() if p.requires_grad)
