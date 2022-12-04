@@ -13,7 +13,6 @@ def tt_decomposition_conv_layer(layer, ranks):
     first = first.reshape(data.shape[0], ranks, 1, 1)
     last = last.reshape(ranks, data.shape[1], layer.kernel_size[0], layer.kernel_size[1])
 
-    bias = layer.bias is not None
     if layer.bias is None:
         bias = False
     else:

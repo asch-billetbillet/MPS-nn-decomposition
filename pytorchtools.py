@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import torch.nn as nn
 from carbontracker.tracker import CarbonTracker
 
 
@@ -54,7 +55,7 @@ class EarlyStopping:
 
 def test_model(model, dataloader, resnet=False):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    tracker = CarbonTracker(epochs=1)
+    tracker = CarbonTracker(epochs=1, components='gpu')
     model.to(device)
 
     # Validate model
@@ -156,3 +157,82 @@ def train_model(model, trainloader, validloader, optimizer, criterion, n_epochs,
             break
     
     torch.cuda.empty_cache()
+
+
+def train_model_distil(model, trainloader, validloader, teacher_model, optimizer, criterion, n_epochs, patience, save_path, resnet=False):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
+    teacher_model.eval()
+    teacher_model.to(device)
+
+    train_losses = []
+    valid_losses = []
+    avg_train_losses = []
+    avg_valid_losses = []
+    early_stopping = EarlyStopping(patience=patience, verbose=True, path=save_path)
+
+    for epoch in range(n_epochs):
+            
+        # Train the model
+        model.train()
+        for i, data in enumerate(trainloader):
+            inputs, labels = data
+            if resnet:
+                inputs = inputs.to(device)
+            else:
+                inputs = torch.flatten(inputs, start_dim=1).to(device)
+            target = labels.to(device).long()
+
+            optimizer.zero_grad()
+
+            outputs_student = model(inputs)
+            outputs_teacher = teacher_model(inputs)
+            #target_teacher = nn.Softmax(dim=1)(outputs_teacher)
+            target_teacher = outputs_teacher
+
+            loss = criterion(outputs_student, target_teacher)
+            loss.backward()
+            optimizer.step()
+
+            train_losses.append(loss.item())
+
+        # Validate the model
+        model.eval()
+        with torch.no_grad():
+            for data in validloader:
+                inputs, labels = data
+                if resnet:
+                    inputs = inputs.to(device)
+                else:
+                    inputs = torch.flatten(inputs, start_dim=1).to(device)
+                target = labels.to(device)
+                
+                outputs = model(inputs)
+                loss = criterion(outputs, target)
+                valid_losses.append(loss.item())
+        
+        # print training/validation statistics 
+        train_loss = np.average(train_losses)
+        valid_loss = np.average(valid_losses)
+        avg_train_losses.append(train_loss)
+        avg_valid_losses.append(valid_loss)
+
+        epoch_len = len(str(n_epochs))
+
+        print_msg = (f'[{epoch:>{epoch_len}}/{n_epochs:>{epoch_len}}] ' +
+                        f'train_loss: {train_loss:.5f} ' +
+                        f'valid_loss: {valid_loss:.5f}'
+        )
+        print(print_msg)
+
+        # clear loss list
+        train_losses = []
+        valid_losses = []
+
+        early_stopping(valid_loss, model)
+
+        if early_stopping.early_stop:
+            print("Early stopping")
+            break
+
+        torch.cuda.empty_cache()
