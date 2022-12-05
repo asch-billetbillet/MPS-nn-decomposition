@@ -15,16 +15,16 @@ format_cfg = {
     "rad_ln_args": {"visible": True},
     "outer_ring": {"visible": True},
     "angle_ln_args": {"visible": True},
-    "rgrid_tick_lbls_args": {"fontsize": 8},
-    "theta_tick_lbls": {"fontsize": 11},
-    "theta_tick_lbls_pad": 3,
+    "rgrid_tick_lbls_args": {"fontsize": 9},
+    "theta_tick_lbls": {"fontsize": 12},
+    "theta_tick_lbls_pad": 11,
 }
 
 
 d = {
     'time': [10, 7, 5, 5, 5, 5, 0],
     'accuracy': [0.975, 0.974, 0.971, 0.965, 0.957, 0.951, 0.750],
-    'energy': [0.528, 0.177, 0.131, 0.133, 0.141, 0.160, 0],
+    'energy': [0.525, 0.178, 0.132, 0.133, 0.129, 0.160, 0],
     'params': [36.5, 20.5, 10.4, 7.0, 5.4, 4.3, 0]
 }
 model_label = ['WRN', 'WRN-MPS-2', 'WRN-MPS-4', 'WRN-MPS-6', 'WRN-MPS-8', 'WRN-MPS-10']
@@ -43,9 +43,9 @@ radar.fill(df.iloc[1].values.tolist(), alpha=0.4, color=dark_green)
 radar.plot(df.iloc[2].values.tolist(), color=yellow, linewidth=0.8, label=model_label[2])
 radar.fill(df.iloc[2].values.tolist(), alpha=0.4, color=yellow)
 
-radar.plot(df.iloc[5].values.tolist(), color=red, linewidth=0.8, label=model_label[5])
-radar.fill(df.iloc[5].values.tolist(), alpha=0.4, color=red)
+radar.plot(df.iloc[4].values.tolist(), color=red, linewidth=0.8, label=model_label[4])
+radar.fill(df.iloc[4].values.tolist(), alpha=0.4, color=red)
 
-radar.use_legend(loc='lower left', bbox_to_anchor=(0.15, -0.13),ncol=radar.plot_counter)
+radar.use_legend(loc='lower left', bbox_to_anchor=(0.15, -0.15),ncol=radar.plot_counter)
 
 plt.savefig("./result.png", dpi=300, bbox_inches="tight")

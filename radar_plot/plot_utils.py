@@ -132,7 +132,7 @@ class ComplexRadar:
             )
             for l in labels
         ]
-        labels = ["$T$(s)", "$P_{v}$", "$E$(kWh)", r"$|\theta|$(M)"]
+        labels = ["$T$(s)", "$P_{v}$", "$E$(Wh)", r"$|\theta|$(M)"]
         self.ax.set_xticklabels(labels, **self.format_cfg["theta_tick_lbls"])
 
         for t, a in zip(self.ax.get_xticklabels(), angles):
